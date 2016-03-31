@@ -97,7 +97,7 @@ public class GPLoad extends BaseStep implements StepInterface {
       this.input = is;
       this.type = type + ">";
     }
-
+// test comment
     public void run() {
       try {
         final BufferedReader br = new BufferedReader( new InputStreamReader( input ) );
