@@ -52,7 +52,9 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.pentaho.di.core.Const;
+//import org.pentaho.di.core.Const;
+import org.pentaho.di.trans.steps.gpload.Const;
+
 import org.pentaho.di.core.SQLStatement;
 import org.pentaho.di.core.SourceToTargetMapping;
 import org.pentaho.di.core.database.Database;
@@ -109,6 +111,7 @@ public class GPLoadDialog extends BaseStepDialog implements StepDialogInterface 
   private TextVar wNullAs;
   private Combo wEncoding;
   private Button wEraseFiles;
+  private Button wEnableNullAs;
   private GPLoadMeta input;
   private TextVar wDelimiter;
   private Text wUpdateCondition;
@@ -669,6 +672,8 @@ public class GPLoadDialog extends BaseStepDialog implements StepDialogInterface 
     if ( input.getLogFile() != null ) {
       wLogFile.setText( input.getLogFile() );
     }
+    System.out.println("************************ wEnableNullAs: " + input.getEnableNullAs());
+    this.wEnableNullAs.setSelection( input.getEnableNullAs() );
     if ( input.getNullAs() != null ) {
       wNullAs.setText( input.getNullAs() );
     }
@@ -769,6 +774,7 @@ public class GPLoadDialog extends BaseStepDialog implements StepDialogInterface 
     inf.setControlFile( wControlFile.getText() );
     inf.setDataFile( wDataFile.getText() );
     inf.setLogFile( wLogFile.getText() );
+    inf.setEnableNullAs( wEnableNullAs.getSelection() );
     inf.setNullAs( wNullAs.getText() );
     inf.setEncoding( wEncoding.getText() );
     inf.setEraseFiles( wEraseFiles.getSelection() );
@@ -1317,13 +1323,36 @@ public class GPLoadDialog extends BaseStepDialog implements StepDialogInterface 
     fdDelimiter.right = new FormAttachment( 100, 0 );
     wDelimiter.setLayoutData( fdDelimiter );
 
+    // Enable NULL_AS
+    Label wlEnableNullAs = new Label( wGPConfigTabComp, SWT.RIGHT );
+    wlEnableNullAs.setText( BaseMessages.getString( PKG, "GPLoadDialog.NullAs.Label" ) );
+    props.setLook( wlEnableNullAs );
+    FormData fdlEnableNullAs = new FormData();
+    fdlEnableNullAs.left = new FormAttachment( 0, 0 );
+    fdlEnableNullAs.top = new FormAttachment( wDataFile, margin );
+    fdlEnableNullAs.right = new FormAttachment( middle, -margin );
+    wlEnableNullAs.setLayoutData( fdlEnableNullAs );
+
+    wEnableNullAs = new Button( wGPConfigTabComp, SWT.CHECK );
+    props.setLook( wEnableNullAs );
+    FormData fdEnableNullAs = new FormData();
+    fdEnableNullAs.left = new FormAttachment( middle, 0 );
+    fdEnableNullAs.top = new FormAttachment( wDataFile, margin );
+    fdEnableNullAs.right = new FormAttachment( 100, 0 );
+    wEnableNullAs.setLayoutData( fdEnableNullAs );
+    wEnableNullAs.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        input.setChanged();
+      }
+    } );
+
     // NULL_AS parameter
     Label wlNullAs = new Label( wGPConfigTabComp, SWT.RIGHT );
     wlNullAs.setText( BaseMessages.getString( PKG, "GPLoadDialog.NullAs.Label" ) );
     props.setLook( wlNullAs );
     FormData fdlNullAs = new FormData();
     fdlNullAs.left = new FormAttachment( 0, 0 );
-    fdlNullAs.top = new FormAttachment( wDataFile, margin );
+    fdlNullAs.top = new FormAttachment( wEnableNullAs, margin );
     fdlNullAs.right = new FormAttachment( middle, -margin );
     wlNullAs.setLayoutData( fdlNullAs );
 
@@ -1332,7 +1361,7 @@ public class GPLoadDialog extends BaseStepDialog implements StepDialogInterface 
     wNullAs.addModifyListener( lsMod );
     FormData fdNullAs = new FormData();
     fdNullAs.left = new FormAttachment( middle, 0 );
-    fdNullAs.top = new FormAttachment( wDataFile, margin );
+    fdNullAs.top = new FormAttachment( wEnableNullAs, margin );
     wNullAs.setLayoutData( fdNullAs );
 
     // Control encoding line

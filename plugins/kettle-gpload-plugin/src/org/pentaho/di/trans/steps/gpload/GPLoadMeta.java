@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
-import org.pentaho.di.core.Const;
+//import org.pentaho.di.core.Const;
 import org.pentaho.di.core.SQLStatement;
 import org.pentaho.di.core.annotations.Step;
 import org.pentaho.di.core.database.Database;
@@ -98,6 +98,10 @@ public class GPLoadMeta extends BaseStepMeta implements StepMetaInterface {
   /** Path to the log file */
   @Injection( name = "LOG_FILE", group = "GP_CONFIG" )
   private String logFile;
+
+  /** Whether to enable the NULL_AS parameter for gpload - must be set to true in order for the NULL_AS property to take effect */
+  @Injection( name = "ENABLE_NULL_AS", group = "GP_CONFIG" )
+  private boolean enableNullAs;
 
   /** NULL_AS parameter for gpload - gpload treats values matching this string as null */
   @Injection( name = "NULL_AS", group = "GP_CONFIG" )
@@ -333,6 +337,7 @@ public class GPLoadMeta extends BaseStepMeta implements StepMetaInterface {
       dataFile = XMLHandler.getTagValue( stepnode, "data_file" );
       delimiter = XMLHandler.getTagValue( stepnode, "delimiter" );
       logFile = XMLHandler.getTagValue( stepnode, "log_file" );
+      enableNullAs = XMLHandler.getTagValue( stepnode, "enable_null_as" ).equalsIgnoreCase( "Y" ) ? true : false;
       nullAs = XMLHandler.getTagValue( stepnode, "null_as" );
       eraseFiles = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "erase_files" ) );
       encoding = XMLHandler.getTagValue( stepnode, "encoding" );
@@ -347,7 +352,7 @@ public class GPLoadMeta extends BaseStepMeta implements StepMetaInterface {
       }
       localhostPort = XMLHandler.getTagValue( stepnode, "localhost_port" );
 
-      encloseNumbers = XMLHandler.getTagValue( stepnode, "enclose_numbers" ).equalsIgnoreCase( "Y" );
+      encloseNumbers = XMLHandler.getTagValue( stepnode, "enclose_numbers" ).equalsIgnoreCase( "Y" ) ? true : false;
 
       int nrvalues = XMLHandler.countNodes( stepnode, "mapping" );
       allocate( nrvalues );
@@ -397,6 +402,7 @@ public class GPLoadMeta extends BaseStepMeta implements StepMetaInterface {
     controlFile = "control${Internal.Step.CopyNr}.cfg";
     dataFile = "load${Internal.Step.CopyNr}.dat";
     logFile = "";
+    enableNullAs = false;
     nullAs = "";
     encoding = "";
     delimiter = ",";
@@ -424,6 +430,7 @@ public class GPLoadMeta extends BaseStepMeta implements StepMetaInterface {
     retval.append( "    " ).append( XMLHandler.addTagValue( "data_file", dataFile ) );
     retval.append( "    " ).append( XMLHandler.addTagValue( "delimiter", delimiter ) );
     retval.append( "    " ).append( XMLHandler.addTagValue( "log_file", logFile ) );
+    retval.append( "    " ).append( XMLHandler.addTagValue( "enable_null_as", (enableNullAs ? "Y" : "N" ) ) );
     retval.append( "    " ).append( XMLHandler.addTagValue( "null_as", nullAs ) );
     retval.append( "    " ).append( XMLHandler.addTagValue( "erase_files", eraseFiles ) );
     retval.append( "    " ).append( XMLHandler.addTagValue( "encoding", encoding ) );
@@ -465,6 +472,7 @@ public class GPLoadMeta extends BaseStepMeta implements StepMetaInterface {
       dataFile = rep.getStepAttributeString( id_step, "data_file" );
       delimiter = rep.getStepAttributeString( id_step, "delimiter" );
       logFile = rep.getStepAttributeString( id_step, "log_file" );
+      enableNullAs = rep.getStepAttributeString( id_step, "enable_null_as" ).equalsIgnoreCase("Y");
       nullAs = rep.getStepAttributeString( id_step, "null_as" );
       eraseFiles = rep.getStepAttributeBoolean( id_step, "erase_files" );
       encoding = rep.getStepAttributeString( id_step, "encoding" );
@@ -510,7 +518,8 @@ public class GPLoadMeta extends BaseStepMeta implements StepMetaInterface {
       rep.saveStepAttribute( id_transformation, id_step, "data_file", dataFile );
       rep.saveStepAttribute( id_transformation, id_step, "delimiter", delimiter );
       rep.saveStepAttribute( id_transformation, id_step, "log_file", logFile );
-      rep.saveStepAttribute( id_transformation, id_step, "null_as", nullAs );
+      rep.saveStepAttribute( id_transformation, id_step, "enable_null_as", ( enableNullAs ? "Y" : "N" ) );
+      rep.saveStepAttribute( id_transformation, id_step, "null_as", nullAs);
       rep.saveStepAttribute( id_transformation, id_step, "erase_files", eraseFiles );
       rep.saveStepAttribute( id_transformation, id_step, "encoding", encoding );
       rep.saveStepAttribute( id_transformation, id_step, "enclose_numbers", ( encloseNumbers ? "Y" : "N" ) );
@@ -831,6 +840,14 @@ public class GPLoadMeta extends BaseStepMeta implements StepMetaInterface {
 
   public void setLogFile( String logFile ) {
     this.logFile = logFile;
+  }
+
+  public boolean getEnableNullAs() {
+    return enableNullAs;
+  }
+
+  public void setEnableNullAs( boolean enableNullAs ) {
+    this.enableNullAs = enableNullAs;
   }
 
   public String getNullAs() {

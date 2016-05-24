@@ -39,7 +39,7 @@ import java.io.InputStreamReader;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
-import org.pentaho.di.core.Const;
+//import org.pentaho.di.core.Const;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowMetaInterface;
@@ -52,6 +52,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
+
 
 /**
  * Performs a bulk load to an Greenplum table.
@@ -281,9 +282,11 @@ public class GPLoad extends BaseStep implements StepInterface {
     contents.append( GPLoad.INDENT ).append( "- FORMAT: TEXT" ).append( Const.CR );
     contents.append( GPLoad.INDENT ).append( "- DELIMITER: " ).append( GPLoad.SINGLE_QUOTE ).append( delimiter )
         .append( GPLoad.SINGLE_QUOTE ).append( Const.CR );
-//  if ( !Const.isEmpty( meta.getNullAs() ) ) {
-    if ( !Const.isEmpty( meta.getNullAs() ) ) {
-      contents.append( GPLoad.INDENT ).append( "- NULL_AS: " ).append( GPLoad.SINGLE_QUOTE ).append( meta.getNullAs() ).append( GPLoad.SINGLE_QUOTE ).append( Const.CR );
+
+    if ( meta.getEnableNullAs() ) {
+      String nullAsValue = meta.getNullAs();
+      nullAsValue = nullAsValue == null ? "" : nullAsValue;
+      contents.append( GPLoad.INDENT ).append( "- NULL_AS: " ).append( GPLoad.SINGLE_QUOTE ).append( nullAsValue ).append( GPLoad.SINGLE_QUOTE ).append( Const.CR );
     }
 
     // TODO: implement escape character
